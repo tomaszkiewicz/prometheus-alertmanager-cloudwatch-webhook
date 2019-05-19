@@ -1,0 +1,41 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: alertmanager-cloudwatch-webhook
+  labels:
+    k8s-app: alertmanager-cloudwatch-webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: alertmanager-cloudwatch-webhook
+  template:
+    metadata:
+      labels:
+        k8s-app: alertmanager-cloudwatch-webhook
+    spec:
+      containers:
+      - name: app
+        image: luktom/prometheus-alertmanager-cloudwatch-webhook
+        ports:
+        - name: http
+          containerPort: 8077
+        livenessProbe:
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 15
+          httpGet:
+            path: /healthz
+            port: http
+        readinessProbe:
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 15
+          httpGet:
+            path: /healthz
+            port: http
+        resources:
+          requests:
+            memory: 100Mi
+          limits:
+            memory: 100Mi

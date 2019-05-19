@@ -1,0 +1,14 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: alertmanager-cloudwatch-webhook
+  labels:
+    k8s-app: alertmanager-cloudwatch-webhook
+spec:
+  selector:
+    k8s-app: alertmanager-cloudwatch-webhook
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
