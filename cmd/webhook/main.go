@@ -25,15 +25,16 @@ var sess *session.Session
 var svc *cloudwatch.CloudWatch
 
 func main() {
+	viper.SetDefault("http-port", 8077)
+	viper.SetDefault("metric-name", "DeadMansSwitch")
+	viper.SetDefault("region", "eu-west-1")
+
 	var err error
 
-	sess, err = session.NewSession() //&aws.Config{Region: aws.String(region)})
+	sess, err = session.NewSession(&aws.Config{Region: aws.String(viper.GetString("region"))})
 	if err != nil {
 		log.Fatal("unable to create AWS session due to an error:", err)
 	}
-
-	viper.SetDefault("http-port", 8077)
-	viper.SetDefault("metric-name", "DeadMansSwitch")
 
 	r := setupRouter()
 	listenAddress := fmt.Sprintf(":%d", viper.GetInt("http-port"))
