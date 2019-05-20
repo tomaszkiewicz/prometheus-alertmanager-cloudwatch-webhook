@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func webhook(c *gin.Context) {
@@ -25,6 +26,9 @@ var sess *session.Session
 var svc *cloudwatch.CloudWatch
 
 func main() {
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	viper.AutomaticEnv()
+
 	viper.SetDefault("http-port", 8077)
 	viper.SetDefault("metric-name", "DeadMansSwitch")
 	viper.SetDefault("region", "eu-west-1")
