@@ -50,7 +50,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/healthz", func(c *gin.Context) {
 		c.JSON(http.StatusOK, struct{}{})
 	})
-	r.GET("/webhook", webhook)
+	r.POST("/webhook", webhook)
 
 	return r
 }
