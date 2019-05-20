@@ -13,6 +13,7 @@ import (
 
 func webhook(c *gin.Context) {
 	if err := putMetric(); err != nil {
+		log.Println("unable to put metric: ", err)
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
