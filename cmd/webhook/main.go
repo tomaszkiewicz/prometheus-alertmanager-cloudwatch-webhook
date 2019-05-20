@@ -68,7 +68,7 @@ func putMetric() error {
 		MetricData: []*cloudwatch.MetricDatum{
 			{
 				MetricName: aws.String(viper.GetString("metric-name")),
-				Unit:       aws.String("Count"),
+				Unit:       aws.String("None"),
 				Value:      aws.Float64(1),
 				Dimensions: []*cloudwatch.Dimension{
 					/*
