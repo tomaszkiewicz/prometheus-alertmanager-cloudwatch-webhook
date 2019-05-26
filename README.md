@@ -24,7 +24,7 @@ Create new IAM role named _k8s-alertmanager-cloudwatch-webhook_ with the followi
       "Action": "sts:AssumeRole",
       "Principal": {
         "AWS": [
-          "arn:aws:iam::123456789012:role/nodes.cluster.name
+          "arn:aws:iam::123456789012:role/nodes.cluster.name"
         ]
       },
       "Effect": "Allow"
@@ -111,4 +111,4 @@ resource "aws_cloudwatch_metric_alarm" "p8s_dead_mans_switch" {
 }
 ```
 
-You should modify _alarm_actions_ and _ok_actions_ and set it to your Cloudwatch alerting system.
+You should modify _alarm_actions_ and _ok_actions_ and set it to your CloudWatch alerting system.
