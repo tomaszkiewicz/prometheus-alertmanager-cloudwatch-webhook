@@ -60,6 +60,7 @@ kustomize build | kubectl apply -f -
 ```
 
 If you do not use kustomize you can apply deployment.yaml and service.yaml files manually.
+Please note that by default configuration is to deploy to _monitoring_ namespace as it's also the case for Prometheus Operator.
 
 ## Configure Alertmanager
 
