@@ -13,11 +13,56 @@ import (
 	"github.com/spf13/viper"
 )
 
+type Webhook struct {
+	Receiver          string
+	Status            string
+	Alerts            []Alerts
+	Grouplabels       Grouplabels
+	CommonLabels      Labels
+	CommonAnnotations Annotations
+	ExternalURL       string
+	Version           string
+	groupKey          string
+}
+
+type Alerts struct {
+	Status       string
+	Labels       Labels
+	Annotations  Annotations
+	StartsAt     string
+	EndsAt       string
+	GeneratorURL string
+}
+
+type Labels struct {
+	Name                 string `json:"__name__"`
+	Alertname            string
+	App                  string
+	Backend              string
+	Instance             string
+	Job                  string
+	KuberenetesNamespace string `json:"kubernetes_namespace"`
+	KubernetesPodName    string `json:"kubernetes_pod_name"`
+	PodTemplateHash      string `json:"pod_template_hash"`
+	TrafficType          string `json:"traffic_type"`
+	URL                  string
+}
+
+type Annotations struct {
+	Description string
+	Summary     string
+}
+
+type Grouplabels struct {
+	AlertName string
+}
+
 var sess *session.Session
 var svc *cloudwatch.CloudWatch
+var webhookData Webhook
 
 func webhook(c *gin.Context) {
-	if err := putMetric(); err != nil {
+	if err := putMetric(c); err != nil {
 		log.Println("unable to put metric: ", err)
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -38,7 +83,8 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
-func putMetric() error {
+func putMetric(c *gin.Context) error {
+	c.BindJSON(&webhookData)
 	svc = cloudwatch.New(sess)
 
 	_, err := svc.PutMetricData(&cloudwatch.PutMetricDataInput{
