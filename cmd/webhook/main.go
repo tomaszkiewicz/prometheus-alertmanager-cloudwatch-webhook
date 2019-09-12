@@ -13,6 +13,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Webhook - The main structure for prometheus
+// alerts using webhooks
 type Webhook struct {
 	Receiver          string
 	Status            string
@@ -25,6 +27,7 @@ type Webhook struct {
 	groupKey          string
 }
 
+// Alerts - A list of alerts from prometheus
 type Alerts struct {
 	Status       string
 	Labels       Labels
@@ -34,6 +37,7 @@ type Alerts struct {
 	GeneratorURL string
 }
 
+// Labels - Contains the labels for an alert
 type Labels struct {
 	Name                 string `json:"__name__"`
 	Alertname            string
@@ -48,11 +52,13 @@ type Labels struct {
 	URL                  string
 }
 
+// Annotations - Contains the annotations for an alert
 type Annotations struct {
 	Description string
 	Summary     string
 }
 
+// Grouplabels - The groupLabels field from the webhook
 type Grouplabels struct {
 	AlertName string
 }
@@ -84,22 +90,31 @@ func setupRouter() *gin.Engine {
 }
 
 func putMetric(c *gin.Context) error {
-	c.BindJSON(&webhookData)
+	err := c.BindJSON(&webhookData)
+	if err != nil {
+		return err
+	}
+
 	svc = cloudwatch.New(sess)
-
-	_, err := svc.PutMetricData(&cloudwatch.PutMetricDataInput{
-		Namespace: aws.String(viper.GetString("NAMESPACE")),
-		MetricData: []*cloudwatch.MetricDatum{
-			{
-				MetricName: aws.String(viper.GetString("METRIC_NAME")),
-				Unit:       aws.String("None"),
-				Value:      aws.Float64(1),
-				Dimensions: []*cloudwatch.Dimension{},
+	for _, alert := range webhookData.Alerts {
+		_, err := svc.PutMetricData(&cloudwatch.PutMetricDataInput{
+			Namespace: aws.String(viper.GetString("NAMESPACE")),
+			MetricData: []*cloudwatch.MetricDatum{
+				{
+					MetricName: aws.String(alert.Labels.Alertname),
+					Unit:       aws.String("None"),
+					Value:      aws.Float64(1),
+					Dimensions: []*cloudwatch.Dimension{},
+				},
 			},
-		},
-	})
+		})
 
-	return err
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func main() {
@@ -107,7 +122,6 @@ func main() {
 	viper.AutomaticEnv()
 
 	viper.SetDefault("HTTP_PORT", 8077)
-	viper.SetDefault("METRIC_NAME", "DeadMansSwitch")
 	viper.SetDefault("REGION", "eu-west-1")
 	viper.SetDefault("NAMESPACE", "Prometheus")
 
