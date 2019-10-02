@@ -2,6 +2,8 @@ The project provides application that exposes webhook to be used by Prometheus A
 The webhook is invoked by DeadMansSwitch alert from Prometheus and on every invocation it updates a metric in CloudWatch.
 You can use that metric to setup Cloudwatch Alert and get notified when Prometheus alerting pipeline is not healthy.
 
+This project can also create multiple Cloudwatch Alerts. It uses the alert name from the Alertmanager webhook as the metric name.
+
 You can find more information [in this blog post](https://luktom.net/en/e1629-monitoring-prometheus-alerting-pipeline-health-using-cloudwatch).
 
 # Requirements
