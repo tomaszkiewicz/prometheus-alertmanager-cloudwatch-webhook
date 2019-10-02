@@ -98,7 +98,7 @@ func putMetric(c *gin.Context) error {
 	svc = cloudwatch.New(sess)
 	for _, alert := range webhookData.Alerts {
 		_, err := svc.PutMetricData(&cloudwatch.PutMetricDataInput{
-			Namespace: aws.String(viper.GetString("NAMESPACE")),
+			Namespace: aws.String(viper.GetString("namespace")),
 			MetricData: []*cloudwatch.MetricDatum{
 				{
 					MetricName: aws.String(alert.Labels.Alertname),
@@ -121,19 +121,19 @@ func main() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
 
-	viper.SetDefault("HTTP_PORT", 8077)
-	viper.SetDefault("REGION", "eu-west-1")
-	viper.SetDefault("NAMESPACE", "Prometheus")
+	viper.SetDefault("http-port", 8077)
+	viper.SetDefault("region", "eu-west-1")
+	viper.SetDefault("namespace", "Prometheus")
 
 	var err error
 
-	sess, err = session.NewSession(&aws.Config{Region: aws.String(viper.GetString("REGION"))})
+	sess, err = session.NewSession(&aws.Config{Region: aws.String(viper.GetString("region"))})
 	if err != nil {
 		log.Fatal("unable to create AWS session due to an error:", err)
 	}
 
 	r := setupRouter()
-	listenAddress := fmt.Sprintf(":%d", viper.GetInt("HTTP_PORT"))
+	listenAddress := fmt.Sprintf(":%d", viper.GetInt("http-port"))
 	log.Printf("listening on: %s", listenAddress)
 	if err := r.Run(listenAddress); err != nil {
 		panic(err)
