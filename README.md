@@ -1,20 +1,22 @@
+# Prometheus Alertmanager Cloudwatch Webhook
+
 The project provides application that exposes webhook to be used by Prometheus Alertmanager.
-The webhook is invoked by DeadMansSwitch alert from Prometheus and on every invocation it updates a metric in CloudWatch.
+The webhook can be invoked by DeadMansSwitch alert from Prometheus and on every invocation it updates a metric in CloudWatch.
 You can use that metric to setup Cloudwatch Alert and get notified when Prometheus alerting pipeline is not healthy.
 
 This project can also create multiple Cloudwatch Alerts. It uses the alert name from the Alertmanager webhook as the metric name.
 
 You can find more information [in this blog post](https://luktom.net/en/e1629-monitoring-prometheus-alerting-pipeline-health-using-cloudwatch).
 
-# Requirements
+## Requirements
 
 1. IAM Role (to allow the app to put CloudWatch metrics)
 2. kube2iam (as default deployment uses kube2iam annotation)
 3. kustomize tool (or you can apply manifests manually)
 
-# Installation
+## Installation
 
-## Create required IAM role
+### Create required IAM role
 
 Create new IAM role named _k8s-alertmanager-cloudwatch-webhook_ with the following trust relationship:
 
@@ -53,7 +55,7 @@ Then set the policy to:
 }
 ```
 
-## Deploy application to kubernetes
+### Deploy application to kubernetes
 
 ```sh
 git clone git@github.com:tomaszkiewicz/prometheus-alertmanager-cloudwatch-webhook.git
@@ -64,7 +66,7 @@ kustomize build | kubectl apply -f -
 If you do not use kustomize you can apply deployment.yaml and service.yaml files manually.
 Please note that by default configuration is to deploy to _monitoring_ namespace as it's also the case for Prometheus Operator.
 
-## Configure Alertmanager
+### Configure Alertmanager
 
 Modify your configuration to include new receiver definition and new route. Here's sample configuration:
 
@@ -91,9 +93,9 @@ receivers:
   - url: "http://alertmanager-cloudwatch-webhook/webhook"
 - name: "slack"
   ...
-``` 
+```
 
-## Configure CloudWatch Alert
+### Configure CloudWatch Alert
 
 Example alert definition in Terraform:
 
@@ -115,3 +117,35 @@ resource "aws_cloudwatch_metric_alarm" "p8s_dead_mans_switch" {
 ```
 
 You should modify _alarm_actions_ and _ok_actions_ and set it to your CloudWatch alerting system.
+
+## Configuration
+
+### Environment variables
+
+You can configure some aspect of the webhook via environment variables.
+
+| Variable    | Default Value | Description                                          |
+| ----------- | ------------- | ---------------------------------------------------- |
+| `HTTP_PORT` | 8077          | the port on which the webhook listen                 |
+| `REGION`    | eu-west-1     | the AWS region where the metric will be created      |
+| `NAMESPACE` | Prometheus    | the namespace under which the metric will be created |
+
+### Config file
+
+You can optionally mount a `config.yml` file into the config folder `/config`.
+This file follow the following pattern
+
+```yml
+http-port: 8077
+region: eu-west-1
+namespace: Prometheus
+dimensions:
+  alerts:
+    myAlertName:            # you can explicitly include labels for a particular alert.
+      - aLabel              # labels can be explicitly listed to be converted to dimensions
+      - anotherLabel
+```
+
+### Metric dimensions
+
+You can map alerts' labels into metrics' dimensions from the mapping declaration in the `config.yml` file.
